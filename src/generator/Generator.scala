@@ -15,9 +15,9 @@ object Generator:
       val condCode = gen(cond)
       val zCode = gen(zBranch)
       val nzCode = gen(nzBranch)
-      // JZ prend un offset relatif pour sauter au code du zBranch
-      // +2 pour passer l'instruction JZ elle-même et un éventuel JMP
-      condCode ++ List(JZ(zCode.length + 2)) ++ zCode ++ List(JMP(nzCode.length + 1)) ++ nzCode
+      // JZ saute le zBranch si la condition n'est PAS zéro
+      // JMP saute le nzBranch après avoir exécuté le zBranch
+      condCode ++ List(JZ(zCode.length + 1)) ++ zCode ++ List(JMP(nzCode.length)) ++ nzCode
     case BinaryTerm(op, u, v) =>
       val c_u = gen(u)
       val c_v = gen(v)

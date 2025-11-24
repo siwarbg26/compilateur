@@ -42,7 +42,12 @@ object PCF:
     println(value)
     println(code)
     val value2 = vm.VM.execute(code)
-    value2.toString == value.toString
+
+    // Comparaison correcte au lieu de toString
+    (value, value2) match
+      case (IntValue(n1), vm.Value.IntVal(n2)) => n1 == n2
+      case _ => false
+
 
   private def parseFromStream(in: InputStream): Term =
     val input = CharStreams.fromStream(in)
