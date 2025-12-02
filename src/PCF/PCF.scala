@@ -5,7 +5,7 @@ import ast.Term.*
 import ast.Op
 import evaluator.Evaluator
 import evaluator.Evaluator.Value.*
-import generator.{Code, Generator}
+import generator.{Generator,ATerm}
 
 import scala.io.StdIn
 import java.io.{ByteArrayInputStream, FileInputStream, InputStream}
@@ -30,14 +30,14 @@ object PCF:
       case IntValue(n) => println(s"==> $n")
       case Closure(_, _, _) => println("==> <function>")
 
-  def compile(in: InputStream): Code =
+  def compile(in: InputStream): List[generator.Ins]  =
     val term = parseFromStream(in)
     val aterm = term.annotate(List())
-    val code = Generator.gen(aterm)
-    if check(aterm, code) then code
+    val code = Generator.gen(term)
+    if check(term, code) then code
     else throw Exception("Implementation Error")
 
-  def check(term: Term, code: Code): Boolean =
+  def check(term: Term, code: List[generator.Ins]): Boolean =
     val value = Evaluator.eval(term, Map())
     println(value)
     println(code)

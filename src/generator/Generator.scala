@@ -1,32 +1,34 @@
 package generator
 
 import ast.Term
-import ast.Term.*
-import ast.Op
-import Ins.*
-
-type Code = List[Ins]
+import generator.ATerm
 
 object Generator:
-  def gen(term: Term): Code = term match
-    case Number(value) => List(Ldi(value))
+  def gen(term: Term): List[Ins] =
+    val annotated = term.annotate(List())
+    genA(annotated)
 
-    case IfZero(cond, zBranch, nzBranch) =>
-      val condCode = gen(cond)
-      val thenCode = gen(zBranch)
-      val elseCode = gen(nzBranch)
-      condCode ++ List(Test(thenCode, elseCode))
+  private def genA(term: ATerm): List[Ins] = term match
+    case ATerm.AInt(n) =>
+      List(Ins.Ldi(n))
 
-    case BinaryTerm(op, u, v) =>
-      val c_u = gen(u)
-      val c_v = gen(v)
-      c_u ++ List(Push) ++ c_v ++ List(gen_op(op))
+    case ATerm.AVar(_, index) =>
+      List(Ins.Search(index))
 
-    case _ =>
-      throw new UnsupportedOperationException("Generator: construct non gérée")
+    case ATerm.AAdd(left, right) =>
+      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Add)
 
-  def gen_op(op: Op): Ins = op match
-    case Op.Plus  => Add
-    case Op.Minus => Sub
-    case Op.Times => Mul
-    case Op.Div   => Div
+    case ATerm.ASub(left, right) =>
+      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Sub)
+
+    case ATerm.AMul(left, right) =>
+      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Mul)
+
+    case ATerm.ADiv(left, right) =>
+      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Div)
+
+    case ATerm.AIf(cond, thenBranch, elseBranch) =>
+      genA(cond) ++ List(Ins.Test(genA(thenBranch), genA(elseBranch)))
+
+    case ATerm.ALet(_, value, body) =>
+      List(Ins.Pushenv) ++ genA(value) ++ List(Ins.Extend) ++ genA(body) ++ List(Ins.Popenv)
