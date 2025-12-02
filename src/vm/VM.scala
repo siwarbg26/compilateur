@@ -19,7 +19,7 @@ object VM:
       case (_, _, _, Ldi(n)::c1) =>
         execute(Value.IntVal(n)::a, s, e, c1)
 
-      // Opérations binaires - CORRECTION ICI
+      // Opérations binaires
       case (Value.IntVal(v2)::Value.IntVal(v1)::a1, _, _, Add::c1) =>
         execute(Value.IntVal(v1 + v2)::a1, s, e, c1)
 
@@ -32,18 +32,16 @@ object VM:
       case (Value.IntVal(v2)::Value.IntVal(v1)::a1, _, _, Div::c1) =>
         execute(Value.IntVal(v1 / v2)::a1, s, e, c1)
 
-      // Saut conditionnel
-      case (Value.IntVal(n)::a1, _, _, JZ(offset)::c1) =>
-        if n == 0 then
-          // Si n == 0, on continue (exécute le then-branch)
-          execute(a1, s, e, c1)
-        else
-          // Si n != 0, on saute (va au else-branch)
-          execute(a1, s, e, c1.drop(offset))
+      // Push - sauvegarder la valeur courante sur la pile SANS la retirer de l'accumulateur
+      case (v::a1, _, _, Push::c1) =>
+       execute(v::a1, v::s, e, c1)
 
-      // Saut inconditionnel
-      case (_, _, _, JMP(offset)::c1) =>
-        execute(a, s, e, c1.drop(offset))
+      // Test - branchement conditionnel
+      case (Value.IntVal(n)::a1, _, _, Test(thenCode, elseCode)::c1) =>
+        if n == 0 then
+          execute(a1, s, e, thenCode ++ c1)
+        else
+          execute(a1, s, e, elseCode ++ c1)
 
       // Cas d'erreur
       case _ =>
