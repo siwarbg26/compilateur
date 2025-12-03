@@ -1,34 +1,36 @@
 package generator
 
-import ast.Term
-import generator.ATerm
+import generator.ATerm.*
+import generator.Ins.*
 
 object Generator:
-  def gen(term: Term): List[Ins] =
-    val annotated = term.annotate(List())
-    genA(annotated)
+  def genA(t: ATerm): List[Ins] = t match
+    case AInt(n) =>
+      List(Ldi(n))
 
-  private def genA(term: ATerm): List[Ins] = term match
-    case ATerm.AInt(n) =>
-      List(Ins.Ldi(n))
+    case AVar(name, index) =>
+      List(Search(index))
 
-    case ATerm.AVar(_, index) =>
-      List(Ins.Search(index))
+    case AAdd(left, right) =>
+      genA(left) ++ List(Push) ++ genA(right) ++ List(Add)
 
-    case ATerm.AAdd(left, right) =>
-      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Add)
+    case ASub(left, right) =>
+      genA(left) ++ List(Push) ++ genA(right) ++ List(Sub)
 
-    case ATerm.ASub(left, right) =>
-      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Sub)
+    case AMul(left, right) =>
+      genA(left) ++ List(Push) ++ genA(right) ++ List(Mul)
 
-    case ATerm.AMul(left, right) =>
-      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Mul)
+    case ADiv(left, right) =>
+      genA(left) ++ List(Push) ++ genA(right) ++ List(Div)
 
-    case ATerm.ADiv(left, right) =>
-      genA(left) ++ List(Ins.Push) ++ genA(right) ++ List(Ins.Div)
+    case AIf(cond, thenBranch, elseBranch) =>
+      genA(cond) ++ List(Test(genA(thenBranch), genA(elseBranch)))
 
-    case ATerm.AIf(cond, thenBranch, elseBranch) =>
-      genA(cond) ++ List(Ins.Test(genA(thenBranch), genA(elseBranch)))
+    case ALet(name, value, body) =>
+      List(Pushenv) ++ genA(value) ++ List(Extend) ++ genA(body) ++ List(Popenv)
 
-    case ATerm.ALet(_, value, body) =>
-      List(Ins.Pushenv) ++ genA(value) ++ List(Ins.Extend) ++ genA(body) ++ List(Ins.Popenv)
+    case AFun(param, body) =>
+      List(Mkclos(genA(body) ++ List(Return)))
+
+    case AApp(func, arg) =>
+      List(Pushenv) ++ genA(arg) ++ List(Push) ++ genA(func) ++ List(Apply, Popenv)

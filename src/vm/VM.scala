@@ -5,12 +5,19 @@ import generator.Ins.*
 
 enum Value:
   case IntVal(n: Int)
+  case Closure(code: List[Ins], env: List[Value])
 
 object VM:
   def execute(code: List[Ins]): Value =
     execute(List(), List(), List(), List(), code)
 
-  private def execute(a: List[Value], s: List[Value], env_stack: List[List[Value]], e: List[Value], c: List[Ins]): Value =
+  private def execute(
+                       a: List[Value],
+                       s: List[Value],
+                       env_stack: List[(List[Value], List[Ins])],
+                       e: List[Value],
+                       c: List[Ins]
+                     ): Value =
     (a, s, env_stack, e, c) match
       case (v::_, _, _, _, Nil) => v
 
@@ -46,10 +53,19 @@ object VM:
         execute(a1, s, env_stack, v::e, c1)
 
       case (_, _, _, _, Pushenv::c1) =>
-        execute(a, s, e::env_stack, e, c1)
+        execute(a, s, (e, Nil)::env_stack, e, c1)
 
-      case (_, _, saved_env::es1, _, Popenv::c1) =>
-        execute(a, s, es1, saved_env, c1)
+      case (_, _, (savedEnv, _)::envStack1, _, Popenv::c1) =>
+        execute(a, s, envStack1, savedEnv, c1)
+
+      case (_, _, _, _, Mkclos(code)::c1) =>
+        execute(Value.Closure(code, e)::a, s, env_stack, e, c1)
+
+      case (Value.Closure(code, closure_env)::arg::a1, _, _, _, Apply::c1) =>
+        execute(a1, s, (e, c1)::env_stack, arg::closure_env, code)
+
+      case (v::a1, _, (saved_env, saved_code)::envStack1, _, Return::_) =>
+        execute(v::a1, s, envStack1, saved_env, saved_code)
 
       case _ =>
         throw new RuntimeException(s"unexpected VM state")

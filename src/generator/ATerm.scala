@@ -9,5 +9,6 @@ enum ATerm:
   case ADiv(left: ATerm, right: ATerm)
   case AIf(cond: ATerm, thenBranch: ATerm, elseBranch: ATerm)
   case ALet(name: String, value: ATerm, body: ATerm)
-
+  case AFun(param: String, body: ATerm)
+  case AApp(func: ATerm, arg: ATerm)
 type Code = List[Ins]
