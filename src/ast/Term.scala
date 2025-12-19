@@ -13,7 +13,7 @@ enum Term:
   case App(func: Term, arg: Term)
   case Fix(name: String, body: Term)
 
-  def annotate(env: List[String]): ATerm = this match  // Utilise generator.ATerm
+  def annotate(env: List[String]): ATerm = this match
     case Number(n) =>
       ATerm.AInt(n)
 

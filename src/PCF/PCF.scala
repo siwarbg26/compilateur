@@ -33,7 +33,7 @@ object PCF:
   def compile(in: InputStream): List[generator.Ins]  =
     val term = parseFromStream(in)
     val aterm = term.annotate(List())
-    val code = Generator.genA(aterm)
+    val code = Generator.gen(aterm)
     if check(term, code) then code
     else throw Exception("Implementation Error")
 
@@ -43,17 +43,10 @@ object PCF:
     println(code)
     val value2 = vm.VM.execute(code)
 
-    (value, value2) match
-      case (IntValue(n1), vm.Value.IntVal(n2)) =>
-        n1 == n2
-      case (Closure(_, _, _), vm.Value.Closure(_, _)) =>
-        true  // Les deux sont des closures, c'est correct !
-      case _ =>
-        false
-
-    // Comparaison correcte au lieu de toString
+    // comparaison correcte des valeurs (Int et closures)
     (value, value2) match
       case (IntValue(n1), vm.Value.IntVal(n2)) => n1 == n2
+      case (Closure(_, _, _), vm.Value.Closure(_, _)) => true
       case _ => false
 
 

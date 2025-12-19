@@ -1,9 +1,19 @@
+// scala
 package generator
 
 import generator.ATerm.*
 import generator.Ins.*
 
 object Generator:
+
+  def gen(t: ATerm): List[Ins] =
+    // vérifie les types avant génération : lève TypeError si problème
+    try
+      TypeChecker.check(t)
+      genA(t)
+    catch
+      case e: TypeError => throw new Exception(s"Type error: ${e.getMessage}")
+
   def genA(t: ATerm): List[Ins] = t match
     case AInt(n) =>
       List(Ldi(n))
