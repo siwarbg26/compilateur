@@ -11,4 +11,5 @@ enum ATerm:
   case ALet(name: String, value: ATerm, body: ATerm)
   case AFun(param: String, body: ATerm)
   case AApp(func: ATerm, arg: ATerm)
+  case AFix(name: String, body: ATerm) // fix annoté, pas de nouvelle instruction
 type Code = List[Ins]

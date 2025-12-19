@@ -1,3 +1,4 @@
+
 package generator
 
 import generator.ATerm.*
@@ -129,8 +130,15 @@ object TypeChecker:
       unify(fT, TFun(aT, res))
       res
 
+    case AFix(name, body) =>
+      val tv = freshVar()
+      val schemeForName = Scheme(Nil, tv)
+      val bodyType = typeOf(body, schemeForName :: env)
+      unify(tv, bodyType)
+      prune(tv)
+
     case other =>
-      throw TypeError(s"TypeChecker: cas non géré: $other")
+      throw TypeError(s"TypeChecker: cas non géré pour le terme: ${other}")
 
   private def show(t: GType): String = prune(t) match
     case TInt => "TInt"

@@ -9,5 +9,6 @@ enum Ins :
   case Pushenv
   case Popenv
   case Mkclos(code: List[Ins])
+  case Fix(code: List[Ins])
   case Apply
   case Return

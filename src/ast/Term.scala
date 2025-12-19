@@ -1,7 +1,22 @@
 package ast
 
 import generator.ATerm
-import generator.ATerm.{AApp, AFun}
+import generator.ATerm.*
+
+enum Op:
+  case Plus
+  case Minus
+  case Times
+  case Div
+
+object Op:
+  def parse(s: String): Op =
+    s match
+      case "+" => Plus
+      case "-" => Minus
+      case "*" => Times
+      case "/" => Div
+      case _   => throw new IllegalArgumentException(s"Opérateur non reconnu: $s")
 
 enum Term:
   case Number(value: Int)
@@ -38,27 +53,15 @@ enum Term:
 
     case Let(name, value, body) =>
       ATerm.ALet(name, value.annotate(env), body.annotate(name :: env))
+
     case Fun(param, body) =>
       AFun(param, body.annotate(param :: env))
 
     case App(func, arg) =>
       AApp(func.annotate(env), arg.annotate(env))
+
+    case Fix(name, body) =>
+      AFix(name, body.annotate(name :: env))
+
     case _ =>
       throw new UnsupportedOperationException("Cas non géré")
-
-
-
-enum Op:
-  case Plus
-  case Minus
-  case Times
-  case Div
-
-object Op:
-  def parse(s: String): Op =
-    s match
-      case "+" => Plus
-      case "-" => Minus
-      case "*" => Times
-      case "/" => Div
-      case _   => throw new IllegalArgumentException(s"Opérateur non reconnu: $s")

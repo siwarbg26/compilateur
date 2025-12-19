@@ -1,4 +1,3 @@
-// scala
 package generator
 
 import generator.ATerm.*
@@ -44,3 +43,8 @@ object Generator:
 
     case AApp(func, arg) =>
       List(Pushenv) ++ genA(arg) ++ List(Push) ++ genA(func) ++ List(Apply, Popenv)
+
+    case AFix(name, body) =>
+      body match
+        case AFun(_, inner) => List(Fix(genA(inner) ++ List(Return)))
+        case _ => List(Fix(genA(body)))
