@@ -65,9 +65,11 @@ private def test(filename: String): Unit =
     inputStream.close()
 
     val vmResult = vm.VM.execute(code)
+    val watCode = generator.Generator.genWAT(code)
 
     println(s"Fichier: $filename.pcf")
     println(s"Code généré: $code")
+    println(s"Code WAT: $watCode")
     println(s"Résultat VM: $vmResult")
     println("Test exécuté ✓")
     println("---")
